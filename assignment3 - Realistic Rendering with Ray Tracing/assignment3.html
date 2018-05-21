@@ -1,0 +1,426 @@
+<html>
+<head>
+<style type="text/css">
+.math{
+	font-style: italic;
+}
+.equation{
+	display: block;
+}
+</style>
+
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+<title>Assignment 3</title>
+
+<p align="center"><font face="Trebuchet MS" size="6"><b>Assignment 3</b> - 
+Realistic rendering with ray tracing</font></p>
+<hr style="background-color: #666666" color="#666666" size="1">
+<p align="left"><b><font face="Trebuchet MS" size="4">Introduction</font></b></p>
+<p align="left"><font face="Trebuchet MS">In the last assignment, you have been 
+familiar with the mesh construction and you are able to construct meshes with B<span lang="en-us">e</span>zier
+surfaces. In this assignment, <span lang="en-us">you</span> are going to render meshes more realistically 
+within the framework of ray tracing. The simplest lighting that you have used 
+from OpenGL API can only handle point light sources with direct illumination. To 
+have realistic rendering, we need to consider more general lighting 
+distributions, where area light sources with indirection illumination from many 
+reflected surfaces should be taken into account. Ray tracing starts by shooting 
+rays from the camera imaging plane, and back-trace these rays to accumulate all 
+possible light energy to form the pixel intensity and color. Since ray tracing 
+tries to back-trace all light rays in space, the final formed image is much more 
+realistic than the one rendered by OpenGL, and you are required to build such a 
+rendering program with the help from our skeleton code.&nbsp; </font></p>
+<hr style="background-color: #666666" color="#666666" size="1">
+<p align="left"><b><font face="Trebuchet MS" size="4">Things to be done</font></b></p>
+<p align="left"><font face="Trebuchet MS" size="3">- <b>[must]</b> Load a mesh object from the OBJ 
+file, and render the mesh with area light source in an enclosed environment box. 
+The material surface property is diffuse + mirror 
+combined.<br>
+- <b>[must]</b> Acceleration structures for efficient ray-geometry intersection 
+should be created, where you can choose to use grid acceleration structure for simplicity.<br>
+- <b>[must]</b> Indirect lighting should be considered, where you basically rely 
+on path tracing for rendering them.<br>
+- <b>[must]</b> Anti-aliasing with super-sampling and filtering should be 
+performed.<br>
+- <b>[optional] </b>You can add transparent or semi-transparent objects into the 
+scene, where the light rays will transmit through the object</font><font face="Trebuchet MS">.</font><font face="Trebuchet MS" size="3"><br>
+- <b>[optional]</b> You can implement more complicated acceleration structures 
+such as KD-tree or hybrid structure, or you can organize larger scenes, where in 
+scene level, you construct BVH structure, and in object level, you construct 
+BSP structure or grid-BSP hybrid structure.<br>
+- <b>[optional]</b> </font><font face="Trebuchet MS">You can also implement </font><font face="Trebuchet MS" size="3"> 
+bi-directional path tracing to better account for some phenomena such as 
+caustics, and i</font><font face="Trebuchet MS">nstead of using simple area light source, you can 
+also use environment light map.</font></p>
+
+<hr style="background-color: #666666" color="#666666" size="1">
+<p align="left"><b><font face="Trebuchet MS" size="4">Submission &amp; demonstration</font></b></p>
+<p align="left"><font face="Trebuchet MS" size="3">Code submission deadline:
+<font color="#FF0000">2018-5-<span lang="en-us">6</span></font></font><font face="Trebuchet MS" color="#FF0000">, 
+23:59pm<br>
+</font><font face="Trebuchet MS">Demonstration date &amp; time: </font>
+<font color="#FF0000" face="Trebuchet MS" size="3">2018-5-7</font><font face="Trebuchet MS" color="#FF0000">, 
+7pm</font><font face="Trebuchet MS" size="3"><font color="#FF0000">-9pm<br>
+</font>Please send your code package and technical report to TAs though email (<font color="#0000FF"><u>check 
+who you should send your assignment to on Piazza</u></font>)</font></p>
+<hr style="background-color: #666666" color="#666666" size="1">
+<p align="left"><b><font face="Trebuchet MS" size="4">Grading rules</font></b></p>
+<p align="left"><font face="Trebuchet MS" size="3">- The [must] items are things 
+that you must finish. When you have finished all the [must] items and 
+demonstrate them successfully in front of TAs, you will get all the scores for 
+the programming part. [90%]<br>
+- In addition to programming, you will also need to submit a technical report 
+specifying the details of your implementation: what you have done and how you 
+achieve them. [10%]<br>
+- You can also choose to do optional items, and if you choose to do any of them, you will 
+get additional scores based on the additional work you have done. But the 
+maximum additional score will not exceed 20% of the entire score of this 
+assignment. <br>
+- Late submission of your assignment will subject to score deduction. Please refer to
+</font><font face="Trebuchet MS"><u><a href="../index.html">Late hand-in policy</a></u> 
+for details.</font></p>
+<hr style="background-color: #666666" color="#666666" size="1">
+<p align="left"><b><font face="Trebuchet MS" size="4">Note:<br>
+Before doing the assignment, please read the materials on
+ray tracing. You can take a reference from the book &quot;<a href="../../materials/Physically%20Based%20Rendering%20-%20From%20Theory%20To%20Implementation%20(Second%20Edition).pdf">Physically-based 
+rendering</a>&quot;</font></b></p>
+<hr style="background-color: #666666" color="#666666" size="1">
+<font face="Trebuchet MS" size="3">
+
+<p align="left">Before you start doing your assignment, you first need to know 
+more in detail about how ray tracing algorithm is designed and how to implement 
+it. In the following, we 
+will introduce the related concepts and algorithms in order to help you finish 
+this assignment.</p>
+<p align="left"><b>Camera model and ray generation</b></p>
+<p align="left">
+	To generate an image of a scene, we need first understand how images are 
+	created. Ray tracing is a physically based approach, where you consider that 
+	each pixel is formed by an incoming light ray with a certain energy. Since 
+	light rays are reversible in space, we can back-trace these rays starting 
+	from the imaging plane and through each pixel, see Figure 1. These back 
+	traced rays will hit or not hit any objects in space. If the ray hits an 
+	object, it will be reflected and refracted about the surface normal of the 
+	hit (intersection) point. Light energy will be accumulated along all the 
+	light ray paths.</p>
+<p align="center">&nbsp;&nbsp;
+<img border="0" src="img/raytracing.PNG" width="282" ><br>
+Figure 1</p>The first step in ray tracing is to create your virtual camera, 
+where everything should be specified in world coordinate system. Take Figure 1, 
+for an example, where a camera can be specified by its imaging center (red 
+point), the viewing direction (blue vector), and a viewport (whose sizes are w 
+and h in world coordinate system). The viewport is further discretized into 
+pixels with a certain resolution to form a digital image. To should rays, we 
+need to find out where the focal point is, which is along the inverse direction 
+of the view vector. There are two ways to specify the focal point. One way is by 
+defining the focal length directly; the other is by defining a field of view (FOV) 
+angle, and the focal length is computed by the FOV angle and the width of the 
+viewport (<i> f </i>= w/(2*tan(alpha/2)) ), see Figure 2. To determine the 
+camera coordinate system which can be located either at the imaging center or 
+the focal point, we can define an up direction vector, and use the 
+orthogonalization process described in the course to calculate the camera 
+coordinate system.<br>
+<p align="center">
+<img border="0" src="img/getRay.PNG" width="282" ></p>
+<p align="center">Figure 2</p>
+<p align="left">&nbsp; </p>
+
+Here is pseudocode of a camera class.
+<code><pre>
+class Camera
+{
+	private:
+		int _imageW;
+		int _imageH;
+
+		double _nearPlaneDistance = 0.1;
+		double _aspectRatio = 0;
+		double _fov;
+		Vector3d _position;
+		Vector3d _cameraFwd;
+		Vector3d _cameraRight;
+		Vector3d _cameraUp;
+		Vector3d _up;
+	public:
+		Camera(Vector3d position, Vector3d target, Vector3d up,
+			int width, int height,
+			double nearPalneDistance, double fov);
+		inline  Vector3d center()    const { return _position; }
+		inline  Vector3d direction() const { return _cameraFwd; }
+		inline  Vector3d up() const { return _up; }
+		inline int imageW() const { return _imageW; }
+		inline int imageH() const { return _imageH; }
+		Ray get_ray(int x, int y, bool jitter, unsigned short *Xi);
+};
+</code></pre>
+<p>Once you have defined the camera, you can calculate the position of each 
+pixel center in world coordinate space and generate a ray for each pixel to 
+shoot it out. Note that when super-sampling is involved for anti-aliasing, you 
+should shoot multiple rays, where you sample within each pixel (the pixel is a 
+square region in space and has a finite size to generate multiple rays.<code><br>
+</code>
+</p>
+
+
+
+
+<p align="left"><b>Ray-geometry intersection</b></p>
+<p align="left">
+	Once the rays are generated, each ray works independently by intersecting 
+	with the geometry in space. If any geometry is intersected by a ray, some 
+	energy will be accumulated to the ray. Ray-geometry intersection is a very 
+	important step in ray tracing, where it influences much of the performance. 
+	Once we determine the intersection point of a ray with a geometry, we can get the 
+	surface normal, texture coordinate etc. at that point for further rendering. 
+	<p><b>Ray-sphere intersection: </b>For example, if we want to determine a ray-sphere intersection, we will 
+	work with the sphere equation (with center(0,0,0); for arbitrary sphere 
+	center, the intersection can be done similarly):
+	<p align="left">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<img border="0" src="img/sphere.PNG" width="157" height="23" ></p>
+and insert the ray equation in parametric form to obtain:
+	<p align="left">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<img border="0" src="img/raysphere.PNG" width="302" height="42" ></p>
+We solve the equation and get the result for t:
+	<p align="left">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<img border="0" src="img/spheret.PNG" width="164" height="86" ></p>
+There are generally two solutions when a ray intersects with a sphere unless it 
+is tangential to the sphere. In ray tracing, we generally select the 
+intersection point which is the nearest to the camera, which means that for two 
+solutions of parameter t, we choose the smallest one to compute the intersection 
+point. The normal of the sphere is the vector starting from the center of the 
+sphere to the intersection point. <br></p>
+	<p><b>Ray-plane intersection:</b>
+For ray-plane intersection, we have similar solution and the equation looks like (check the 
+	course notes):
+	<p align="left">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<img border="0" src="img/rayplane.PNG" width="347" height="87" ></p></p>
+	<p><b>Ray-AABB intersection:</b> To determine the intersection of any object, we can first determine 
+	a ray-bounding box intersection. Bounding box is the box with the 
+	minimal volume that encapsulates the object in space. Axis-aligned bounding 
+	box (AABB) further constrains the bounding box so that the faces of the box are 
+	always parallel to the coordinate planes, no matter how the geometrical 
+	objects orient, see Figure 3.
+	<p align="center">
+	<img border="0" src="img/rayAABB.PNG" width="282" ></p>
+<p align="center">Figure 3</p>
+To intersect a ray with AABB, we determine intersection with planes that are 
+parallel to the coordinate planes, and check intersection point range. First, we insert ray equation into the AABB planes, and solve it for t. Then we check intersected points for whether they are within the AABB range 
+on the corresponding planes. <br></p>
+	<p><b>Ray-triangle intersection:</b>
+	Our objects or surfaces usually consist of a set of triangles, so basically we should figure out how to determine 
+	the intersection between triangles and rays. Any point (p) inside the triangle (with p<sub>0</sub>, p<sub>1</sub>, p<sub>2</sub>) can be written as:
+	<p align="left">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<img border="0" src="img/trianglepoint.PNG" width="361" height="72" ></p>
+Insert the parametric ray equation and we get the equation to solve: 
+	<p align="left">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<img border="0" src="img/raytrianglesolve.PNG" width="218" height="86" >.</p>
+The efficient solution is taken as the following:
+	<p align="left">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<img border="0" src="img/raytrianglesolvemore.PNG" width="422" height="127" >.</p>
+Once we obtain the barycentric coordinate, we can caclulate the normal (as well 
+as the texture coordinate) at the intersected point by barycentric coordinate 
+interpolation:
+	<p align="left">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	<img border="0" src="img/trianglenormal.PNG" width="289" height="137" ></p></p>
+	<p><b>Ray-polygon</b> <b>intersection:</b> For polygons, you can divide them into triangles and get intersection through ray-triangle intersection.</p>
+	<p>
+<b>Ray-mesh intersection: </b>For arbitrary mesh consisting of triangles, you 
+need acceleration structures to quickly locate the intersected triangle. The 
+basic approach is to use grid structure (see Figure 4), where for each grid 
+cell, we need to associate the related triangle indexes. The important step here 
+is to successfully identify whether a box contains a triangle.</p>
+<p align="center">
+<img border="0" src="img/grid_struct.jpg" width="298" height="331"><br>
+Figure 4</p>
+	<p align="left">
+		In your homework, you need to implement intersections in different object classes by completing function <b>getIntersection()</b> of virtual class <i>Object</i> :
+<code><pre>
+virtual ObjectIntersection getIntersection(const Ray& ray)
+{
+
+}</pre>
+	</code>
+<p>And the function returns struct <i>ObjectIntersection</i>, which includes the 
+intersection state (hit or not), normal and material of the intersection point, and 
+parameter t to determine the length of the ray.
+<code></p>
+<pre>
+struct ObjectIntersection
+{
+	bool _hit;
+	double _t;
+	Vector3d _normal;
+	Material _material;
+	ObjectIntersection(bool hit = false, 
+		double u = 0, Vector3d normal = Vector3d(0),
+	Material material = Material());
+};
+</code></pre>
+	</p>
+</p>
+
+
+<p align="left"><b>Computing surface normal and reflection/refraction rays</b></p>
+<p align="left">
+	Both reflection and refraction happen at the object surface, and we need to compute both reflection and refraction rays. 
+	We can refer to the process according to Figure 4 below:
+	<p align="center">
+<img border="0" src="img/reflectandrefract.PNG" width="340" ></p>
+<p align="center">Figure 5</p>In the image, <b>i</b> refers to the incoming light ray, <b>n</b> refers to 
+the surface normal, <b>r</b> and <b>t</b> refer to reflection and refraction 
+rays. For computing reflection rays, we can apply:<p align="left">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img border="0" src="img/reflection.PNG" width="200" ></p>
+For refraction ray, according to Snell's law ,we have<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img border="0" src="img/refractionlaw.PNG" width="130" >. 
+<br>
+Considering the relationship shown in Figure 4, we have refraction ray as:
+ 	<p align="left">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img border="0" src="img/refraction.PNG" width="400" >.</p>
+</p>
+<p align="left"><b>Sampling light rays at the intersection point</b></p>
+<p align="left">
+	Since we need to account for the fact that light can come from any direction 
+	around the hemi-sphere above the intersection point P, We use Monte Carlo integration to select some random directions within the hemisphere 
+	to trace rays in these directions into the scene. If these rays intersect some geometry in the scene, we then compute the 
+	light energy at the intersected point which is reflected. If the rays do not 
+	intersect with the light sources, we need to trace them until they hit the 
+	light sources.<p align="left">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img border="0" src="img/globalillum.jpg" width="282" ></p>
+
+<p>
+Let's have a look what we need to compute the amount of light arriving indirectly at P.
+ Basically, we need to compute the samples on the hemi-sphere and generate a set 
+of new rays to shoot them out. For simplicity, we stick to the principle that 
+samples over a hemi-sphere conform to a cosine distribution. There can be two 
+ways to generate such samples. One way is to directly construct a sampling 
+process over a hemi-sphere that follows cosine distribution; the other is to 
+first sample uniformly over a 2D disk which is perpendicular to the normal, and 
+then project the sample onto the hemi-sphere (Malley's method). Please refer to 
+the course notes for the sampling equations.</p>
+</p>
+<p>
+In assignment, when you sample the point over a hemi-sphere, so you need generate 
+two uniform random variables r1,r2, and you will fill the code for generating 
+the sampled rays:<code><pre>
+void calcLocalCoords(const Vector3d& w, Vector3d* u, Vector3d* v)
+{</pre>
+<pre>
+
+}</pre>
+<pre>
+
+void onHemisphere(const Vector3d& normal, Vector3d* direction, double &r1, double &r2)
+{</pre>
+<pre>
+
+}
+</code></pre>
+</p>
+When the ray intersect<span lang="en-us">s</span> a perfect diffuse material, you need do the Monte Carlo integration. 
+When it hits a perfect specular material, you only calculate the reflected ray and trace along the 
+new direction. When the material property is defined to be a combination of both 
+with a weighting factor, you need to combine the integration results of both by 
+using the sampling scheme separately.</p>
+<p>The traditional way to sample rays is to start from a camera ray. If the 
+camera ray intersects with an object, then sample a set of rays (e.g., 1000 
+rays) and trace them until all of the them intersect with light sources. 
+However, such a scheme is pretty slow in practice. As an approximation, you can 
+choose another sampling scheme, as illustrated in Figure 6. Such a sampling 
+method starts by giving sufficient camera ray samples per image pixel (e.g., 
+10000 rays per pixel), and trace for each ray independently, For every day, when 
+it intersects with an object, we only sample one reflected/refracted ray, but 
+according to the cosine distribution. This method not only can work faster, but 
+also reduces the variance of the resulting rendering result.</p>
+<p align="center">
+<img border="0" src="img/pt.png" width="467" height="273"></p>
+<p align="center">Figure 6</p>
+
+<p align="left"><b>Sampling light sources</b></p>
+<p align="left">
+	When the light source is not a point light source, we also need to sample on 
+	the area of the surface, which are taken into account during the Monte-Carlo 
+	integration. For each light source, we uniformly sample on the area light sources.  
+	If the light source has non-uniform light energy distributions, we sample 
+	following that distribution. For each intersection point, we need to check 
+	whether it is directly illuminated by any sample of the light source through 
+	checking any other object between the intersected surface point and the 
+	light source sample (by intersection test again). If such any other object 
+	lies between the intersection point and the light source, we ignore such a 
+	light sample.
+</p>
+
+<p align="left"><b>Bi-directional path tracing</b></p>
+<p align="center">
+<img border="0" src="img/globalillum.png" width="482" ></p>
+<p align="center">
+Figure 7</p>
+
+<p>When light rays bounce only once from the surface of an object to reach the eye, we 
+refer it to the direct illumination. But when light rays are emitted by a light source, 
+they can bounce off of the surface of objects multiple times before reaching the eye. 
+This is what we call indirect illumination because light rays follow complex paths 
+before entering the eye. See Figure 7. 
+</p>
+<p>Bidirectional path tracing takes on an idea that we divide all rays into 
+light rays (which all start from the light sources) and camera rays (which all 
+start from the camera pixels). Then we try to cast light rays over space first 
+by sampling light rays (most probably uniform) around every light sample. These 
+light rays are traced with several bounces and then stop. Once the light ray is 
+bounced, BRDF is used to calculate the reflected light ray energy. For each 
+intersection point of the light ray, we need to store the incoming light energy. 
+After that, we shoot camera rays. Then a camera ray intersects with an object, 
+we try to connect all the intersection point of the light rays to calculate the 
+incoming energy. The camera rays are also traced with several bounces and stop. 
+Finally, we accumulate all the energy from every camera ray to form the final 
+pixel color. See Figure 8.</p>
+<p align="center">&nbsp;
+<img border="0" src="img/BDPT.PNG" width="586" height="203" ></p>
+<p align="center">Figure 8</p>	
+</p>
+
+	<p><b>Anti-aliasing</b> Aliasing is <span lang="en-us">that </span>high frequencies in the original signal masquerade as low frequencies after reconstruction (due to undersampling). So what we should do is 
+	super-sampling with a reconstruction filter to reduce the error. If we use 
+	the approach of sampling sufficient rays within a pixel, anti-aliasing is 
+	automatically involved.<p>¡¡<p>
+	</p>
+</p>
+
+
+
+<hr style="background-color: #666666" color="#666666" size="1">
+
+
+</font>
+<font face="Trebuchet MS" style="font-size: 14pt" color="#000000">
+
+<p align="left"><b>Skeleton program</b></p>
+</font>
+<font face="Trebuchet MS" size="3" color="#000000">
+
+<p align="left">We have prepared a skeleton code for you <span lang="en-us">to 
+do</span> on both <u><a href="code/win.rar">Windows</a></u> and
+<u><a href="code/linux.rar">Linux</a></u>, which you will need to augment it 
+much further for realistic rendering with ray tracing. If you have any questions regarding 
+configuration and algorithm understanding, you can resort to help from TAs.</p>
+<hr style="background-color: #666666" color="#666666" size="1">
+</font>
+<font face="Trebuchet MS" color="#000000" style="font-size: 14pt">
+
+<p align="left"><b>Technical report</b></p>
+</font>
+<font face="Trebuchet MS" size="3" color="#000000">
+
+<p align="left">For technical report, we require you 
+to do it with <a href="https://www.latex-project.org/">LaTex</a>, and you can 
+use <a href="https://www.texstudio.org/">TeXstudio</a> to facilitate your 
+editing. The latex template for your technical report can be downloaded <u>
+<a href="latex_temp/latex_temp.rar">here</a></u>.</p>
+<hr style="background-color: #666666" color="#666666" size="1">
+<p align="right">Copyright 2018 
+ShanghaiTech University</p>
+
+</body>
+
+</font>
+
+</html>

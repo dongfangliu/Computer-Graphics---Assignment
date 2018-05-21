@@ -1,0 +1,22 @@
+﻿  assignment1.cpp
+e:\mystudyfiles\大三下\图形学\hw\assignment2\bezier\mlbezier.h(127): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+e:\mystudyfiles\大三下\图形学\hw\assignment2\bezier\mlbezier.h(129): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+e:\mystudyfiles\大三下\图形学\hw\assignment2\bezier\mlbezier.h(144): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+e:\mystudyfiles\大三下\图形学\hw\assignment2\bezier\mlbezier.h(146): warning C4244: “初始化”: 从“float”转换到“int”，可能丢失数据
+e:\mystudyfiles\大三下\图形学\hw\assignment2\inc\shader_m.h(52): warning C4101: “infoLog”: 未引用的局部变量
+e:\mystudyfiles\大三下\图形学\hw\assignment2\inc\shader_m.h(51): warning C4101: “success”: 未引用的局部变量
+MSVCRTD.lib(initializers.obj) : warning LNK4098: 默认库“msvcrt.lib”与其他库的使用冲突；请使用 /NODEFAULTLIB:library
+assignment1.obj : error LNK2019: 无法解析的外部符号 __imp_glBegin，该符号在函数 "void __cdecl drawControlPoint(class mlBezier &)" (?drawControlPoint@@YAXAEAVmlBezier@@@Z) 中被引用
+assignment1.obj : error LNK2019: 无法解析的外部符号 __imp_glClear，该符号在函数 main 中被引用
+assignment1.obj : error LNK2019: 无法解析的外部符号 __imp_glClearColor，该符号在函数 main 中被引用
+assignment1.obj : error LNK2019: 无法解析的外部符号 __imp_glColor3f，该符号在函数 "void __cdecl drawControlPoint(class mlBezier &)" (?drawControlPoint@@YAXAEAVmlBezier@@@Z) 中被引用
+assignment1.obj : error LNK2019: 无法解析的外部符号 __imp_glEnd，该符号在函数 "void __cdecl drawControlPoint(class mlBezier &)" (?drawControlPoint@@YAXAEAVmlBezier@@@Z) 中被引用
+assignment1.obj : error LNK2019: 无法解析的外部符号 __imp_glLoadIdentity，该符号在函数 "void __cdecl initPMV(void)" (?initPMV@@YAXXZ) 中被引用
+assignment1.obj : error LNK2019: 无法解析的外部符号 __imp_glMatrixMode，该符号在函数 "void __cdecl initPMV(void)" (?initPMV@@YAXXZ) 中被引用
+assignment1.obj : error LNK2019: 无法解析的外部符号 __imp_glPointSize，该符号在函数 main 中被引用
+assignment1.obj : error LNK2019: 无法解析的外部符号 __imp_glPolygonMode，该符号在函数 main 中被引用
+assignment1.obj : error LNK2019: 无法解析的外部符号 __imp_glVertex3f，该符号在函数 "void __cdecl drawControlPoint(class mlBezier &)" (?drawControlPoint@@YAXAEAVmlBezier@@@Z) 中被引用
+assignment1.obj : error LNK2019: 无法解析的外部符号 __imp_glViewport，该符号在函数 "void __cdecl framebuffer_size_callback(struct GLFWwindow *,int,int)" (?framebuffer_size_callback@@YAXPEAUGLFWwindow@@HH@Z) 中被引用
+assignment1.obj : error LNK2019: 无法解析的外部符号 gluPerspective，该符号在函数 "void __cdecl initPMV(void)" (?initPMV@@YAXXZ) 中被引用
+assignment1.obj : error LNK2019: 无法解析的外部符号 gluLookAt，该符号在函数 "void __cdecl initPMV(void)" (?initPMV@@YAXXZ) 中被引用
+E:\MyStudyFiles\大三下\图形学\HW\assignment2\x64\Debug\assignment.exe : fatal error LNK1120: 13 个无法解析的外部命令

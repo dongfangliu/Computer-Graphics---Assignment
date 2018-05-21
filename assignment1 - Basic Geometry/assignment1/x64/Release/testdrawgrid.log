@@ -1,0 +1,25 @@
+﻿  assignment1.cpp
+e:\mycodes\clionprojects\cghw\assignment1\src\../inc/shader_m.h(52): warning C4101: “infoLog”: 未引用的局部变量
+e:\mycodes\clionprojects\cghw\assignment1\src\../inc/shader_m.h(51): warning C4101: “success”: 未引用的局部变量
+src\assignment1.cpp(45): warning C4305: “参数”: 从“double”到“GLfloat”截断
+src\assignment1.cpp(106): warning C4018: “<”: 有符号/无符号不匹配
+src\assignment1.cpp(132): warning C4018: “<=”: 有符号/无符号不匹配
+src\assignment1.cpp(133): warning C4018: “<=”: 有符号/无符号不匹配
+src\assignment1.cpp(313): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+src\assignment1.cpp(186): warning C4101: “tri_EBO”: 未引用的局部变量
+src\assignment1.cpp(186): warning C4101: “tri_VBO”: 未引用的局部变量
+src\assignment1.cpp(186): warning C4101: “tri_VAO”: 未引用的局部变量
+src\assignment1.cpp(418): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+src\assignment1.cpp(419): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+src\assignment1.cpp(422): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+src\assignment1.cpp(423): warning C4244: “初始化”: 从“double”转换到“float”，可能丢失数据
+src\assignment1.cpp(424): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+src\assignment1.cpp(425): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+src\assignment1.cpp(445): warning C4244: “-=”: 从“double”转换到“float”，可能丢失数据
+  正在生成代码
+  13 of 278 functions ( 4.7%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    7 functions had inline decision re-evaluated but remain unchanged
+  已完成代码的生成
+  testdrawgrid.vcxproj -> E:\Mycodes\CLionProjects\CGHW\assignment1\x64\Release\assignment.exe
+  testdrawgrid.vcxproj -> E:\Mycodes\CLionProjects\CGHW\assignment1\x64\Release\assignment.pdb (Full PDB)
